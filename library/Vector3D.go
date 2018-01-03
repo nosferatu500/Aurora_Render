@@ -38,6 +38,10 @@ func (v Vector3D) Multiply(v2 Vector3D) Vector3D {
 	return Vector3D{v.X * v2.X, v.Y * v2.Y, v.Z * v2.Z}
 }
 
+func (v Vector3D) MultiplyScalar(s float64) Vector3D {
+	return Vector3D{v.X * s, v.Y * s, v.Z * s}
+}
+
 func (v Vector3D) String() string {
 	return fmt.Sprintf("%v:%v:%v", v.X, v.Y, v.Z)
 }

@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	width = 1000
-	height = 1000
+	width = 800
+	height = 800
+	depth = 255
 )
 
 //TODO: Make as const in future release.
@@ -24,6 +25,12 @@ func main() {
 
 	var newImage image.RGBA
 
+	var zBuffer [width*height]int
+
+	for i:=0; i<width*height; i++ {
+		zBuffer[i] = -2147483648
+	}
+
 	var lightDir = library.Vector3D{0,0, -1}
 
 	model := library.CreateModel("./obj/african_head.obj")
@@ -34,24 +41,27 @@ func main() {
 	for i := 0; i < count - 20; i++ {
 		face := model.Faces[i]
 
-		var screenCoords [3]library.Vector2D
+		var screenCoords [3]library.Vector3D
 		var worldCoords [3]library.Vector3D
 
 		for j := 0; j < 3; j++ {
 			v := model.Verts[face[j]]
 
-			screenCoords[j] = library.Vector2D{X: (v.X + 1) * width / 2, Y: (v.Y + 1) * height / 2}
+			screenCoords[j] = library.Vector3D{X: (v.X + 1) * width / 2, Y: (v.Y + 1) * height / 2, Z: (v.Z + 1) * depth / 2}
 			worldCoords[j] = v
 		}
 
-		n := (worldCoords[2].Subtract(worldCoords[0])).CrossProduct(worldCoords[1].Subtract(worldCoords[0]))
+		firstVector := worldCoords[2].Subtract(worldCoords[0])
+		secondVector := worldCoords[1].Subtract(worldCoords[0])
+
+		n := firstVector.CrossProduct(secondVector)
 		n = n.Normalize()
 
 		intensity := n.Multiply(lightDir)
 
 		newImage = createLine(screenCoords[0], screenCoords[1], image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, white)
 		if intensity.Z > 0 {
-			newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2], image.RGBA{Pix: newImage.Pix, Stride: newImage.Stride, Rect: newImage.Rect}, color.RGBA{uint8(intensity.Z) * 255, uint8(intensity.Z) * 255, uint8(intensity.Z) * 255, 255})
+		//	newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2], image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, color.RGBA{uint8(intensity.Z) * 255, uint8(intensity.Z) * 255, uint8(intensity.Z) * 255, 255}, zBuffer)
 		}
 	}
 
@@ -65,7 +75,7 @@ func main() {
 }
 
 // Return value only for dev test.
-func createLine(p0, p1 library.Vector2D, img image.RGBA, color color.RGBA) image.RGBA {
+func createLine(p0, p1 library.Vector3D, img image.RGBA, color color.RGBA) image.RGBA {
 	steep := false
 
 	if math.Abs(float64(p0.X - p1.X)) < math.Abs(float64(p0.Y - p1.Y)) {
@@ -92,7 +102,7 @@ func createLine(p0, p1 library.Vector2D, img image.RGBA, color color.RGBA) image
 	return img
 }
 
-func createTriangle(t0, t1, t2 library.Vector2D, img image.RGBA, color color.RGBA) image.RGBA {
+func createTriangle(t0, t1, t2 library.Vector3D, img image.RGBA, color color.RGBA, zBuffer [width*height]int) image.RGBA {
 	if t0.Y == t1.Y && t0.Y == t2.Y { return img }
 
 	if t0.Y > t1.Y {
@@ -130,14 +140,20 @@ func createTriangle(t0, t1, t2 library.Vector2D, img image.RGBA, color color.RGB
 			beta = i / segmentHeight
 		}
 
-		A := t0.Add(t2.Subtract(t0)).MultiplyScalar(alpha)
+		firstStepA := t2.Subtract(t0)
+		secondStepA := firstStepA.MultiplyScalar(alpha)
+		A := t0.Add(secondStepA)
 
-		B := library.Vector2D{0,0}
+		B := library.Vector3D{0,0, 0}
 
 		if secondHalf {
-			B = t1.Add(t2.Subtract(t1)).MultiplyScalar(beta)
+			subVector := t2.Subtract(t1)
+			multiplyVector := subVector.MultiplyScalar(beta)
+			B = t1.Add(multiplyVector)
 		} else {
-			B = t0.Add(t1.Subtract(t0)).MultiplyScalar(beta)
+			subVector := t1.Subtract(t0)
+			multiplyVector := subVector.MultiplyScalar(beta)
+			B = t0.Add(multiplyVector)
 		}
 
 		if A.X > B.X {
@@ -145,7 +161,31 @@ func createTriangle(t0, t1, t2 library.Vector2D, img image.RGBA, color color.RGB
 		}
 
 		for j := A.X; j <=B.X; j++ {
-			img.Set(int(j), int(t0.Y + i), color)
+			var phi = 0.0
+
+			if B.X == A.X {
+				phi = 1.0
+			} else {
+				phi = (j - A.X) / (B.X - A.X)
+			}
+			subVector := B.Subtract(A)
+			multiplyVector := subVector.MultiplyScalar(phi)
+			P := A.Add(multiplyVector)
+
+			P.X = j
+			P.Y = t0.Y + i
+
+			idx := int(j + P.Y * width)
+
+			if idx <= width*height {
+				if zBuffer[idx] < int(P.Z) {
+					zBuffer[idx] = int(P.Z)
+					img.Set(int(P.X), int(P.Y), color)
+				}
+			}
+
+			img.Set(int(P.X), int(P.Y), color)
+
 		}
 	}
 	return img
