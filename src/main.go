@@ -1,12 +1,18 @@
 package main
 
 import (
-	// "AuroraRender/library"
 	"image"
 	"image/color"
 	"os"
 	"image/png"
 	"math"
+	"AuroraRender/library"
+	"fmt"
+)
+
+const (
+	width = 800
+	height = 800
 )
 
 //TODO: Make as const in future release.
@@ -15,24 +21,40 @@ var red = color.RGBA{255, 0, 0, 255}
 var blue = color.RGBA{0, 0, 255, 255}
 
 func main() {
-	img := image.NewRGBA(image.Rect(0, 0, 255, 255))
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
-	// Set Color point. Temporary. Only for test.
-	// img.Set(52, 41, red)
+	var newImage image.RGBA
 
-	// Incorrect flip. Need fix.
-	// img = library.FlipByVertically(image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect})
+	model := library.CreateModel("./obj/african_head.obj")
 
-	newImage := createLine(13, 20, 80, 40, image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, red)
-	newImage = createLine(20, 13, 40, 80, image.RGBA{Pix: newImage.Pix, Stride: newImage.Stride, Rect: newImage.Rect}, white)
-	newImage = createLine(80, 40, 13, 20, image.RGBA{Pix: newImage.Pix, Stride: newImage.Stride, Rect: newImage.Rect}, blue)
+	count := library.GetFaceCount(model)
 
+	// Fix bug with out of range for faces collection.
+	for i := 0; i < count - 300; i++ {
+		face := model.Faces[i]
 
+		fmt.Println(i, face, count)
+
+		for j := 0; j < 3; j++ {
+			v0 := model.Verts[face[j]]
+			v1 := model.Verts[face[(j + 1) % 3]]
+
+			x0 := (v0.X + 1.0) * width / 2
+			y0 := (v0.Y + 1.0) * height / 2
+
+			x1 := (v1.X + 1.0) * width / 2
+			y1 := (v1.Y + 1.0) * height / 2
+
+			newImage = createLine(int(x0), int(y0), int(x1), int(y1), image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, white)
+		}
+	}
+
+	img = library.FlipByVertically(image.RGBA{Pix: newImage.Pix, Stride: newImage.Stride, Rect: newImage.Rect})
 
 	//TODO: Make as separate func in library.
 	f, _ := os.OpenFile("out.png", os.O_WRONLY|os.O_CREATE, 0600)
 	defer f.Close()
-	png.Encode(f, newImage.SubImage(newImage.Rect))
+	png.Encode(f, img)
 
 }
 
