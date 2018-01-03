@@ -66,7 +66,7 @@ func CreateModel(path string) Model {
 			for i := 0; i < len(coords); i++ {
 				if len(coords) == 3 {
 					coord, err := strconv.ParseFloat(coords[i], 10)
-
+					fmt.Println(coord)
 					if err != nil {
 						fmt.Println("Error in creation model process", err)
 					}
