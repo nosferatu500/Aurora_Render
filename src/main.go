@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"math"
 	"AuroraRender/library"
+	"fmt"
 )
 
 const (
@@ -31,8 +32,6 @@ func main() {
 		zBuffer[i] = -2147483648
 	}
 
-	var lightDir = library.Vector3D{0,0, -1}
-
 	model := library.CreateModel("./obj/african_head.obj")
 
 	count := library.GetFaceCount(model)
@@ -41,27 +40,19 @@ func main() {
 	for i := 0; i < count - 20; i++ {
 		face := model.Faces[i]
 
-		var screenCoords [3]library.Vector3D
-		var worldCoords [3]library.Vector3D
+		fmt.Println(i, face, count)
 
 		for j := 0; j < 3; j++ {
-			v := model.Verts[face[j]]
+			v0 := model.Verts[face[j] - 1]
+			v1 := model.Verts[face[(j+1)%3] - 1]
 
-			screenCoords[j] = library.Vector3D{X: (v.X + 1) * width / 2, Y: (v.Y + 1) * height / 2, Z: (v.Z + 1) * depth / 2}
-			worldCoords[j] = v
-		}
+			x0 := int((v0.X + 1) * float64(width) / 2)
+			y0 := int((v0.Y + 1) * float64(height) / 2)
 
-		firstVector := worldCoords[2].Subtract(worldCoords[0])
-		secondVector := worldCoords[1].Subtract(worldCoords[0])
+			x1 := int((v1.X + 1) * float64(width) / 2)
+			y1 := int((v1.Y + 1) * float64(height) / 2)
 
-		n := firstVector.CrossProduct(secondVector)
-		n = n.Normalize()
-
-		intensity := n.Multiply(lightDir)
-
-		newImage = createLine(screenCoords[0], screenCoords[1], image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, white)
-		if intensity.Z > 0 {
-		//	newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2], image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, color.RGBA{uint8(intensity.Z) * 255, uint8(intensity.Z) * 255, uint8(intensity.Z) * 255, 255}, zBuffer)
+			newImage = createLine(x0, y0, x1, y1, image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, white)
 		}
 	}
 
@@ -74,29 +65,43 @@ func main() {
 
 }
 
-// Return value only for dev test.
-func createLine(p0, p1 library.Vector3D, img image.RGBA, color color.RGBA) image.RGBA {
+func createLine(x0, y0, x1, y1 int, img image.RGBA, color color.RGBA) image.RGBA {
 	steep := false
 
-	if math.Abs(float64(p0.X - p1.X)) < math.Abs(float64(p0.Y - p1.Y)) {
-		p0.X, p0.Y = p0.Y, p0.X
-		p1.X, p1.Y = p1.Y, p1.X
+	if math.Abs(float64(x0 - x1)) < math.Abs(float64(y0 - y1)) {
+		x0, y0 = y0, x0
+		x1, y1 = y1, x1
 		steep = true
 	}
 
-	if p0.X > p1.X {
-		p0, p1 = p1, p0
+	if x0 > x1 {
+		x0, x1 = x1, x0
+		y0, y1 = y1, y0
 	}
 
-	for x := p0.X; x <= p1.X; x++ {
-		t := (x - p0.X) / (p1.X - p0.X)
+	dx := x1 - x0
+	dy := y1 - y0
 
-		y := p0.Y * (1 - t) + p1.Y * t
+	derr := math.Abs(float64(dy)) * 2
+	err := 0
 
+	y := y0
+
+	for x := x0; x <= x1; x++ {
 		if steep {
-			img.Set(int(y), int(x), color)
+			img.Set(y, x, color)
 		} else {
-			img.Set(int(x), int(y), color)
+			img.Set(x, y, color)
+		}
+
+		err += int(derr)
+		if err > dx {
+			if y1 > y0 {
+				y++
+			} else {
+				y--
+			}
+			err -= dx * 2
 		}
 	}
 	return img

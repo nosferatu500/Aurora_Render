@@ -3,9 +3,7 @@ package library
 import (
 	"os"
 	"bufio"
-	"fmt"
 	"log"
-	"regexp"
 	"strings"
 	"strconv"
 )
@@ -16,8 +14,6 @@ type Model struct {
 }
 
 func CreateModel(path string) Model {
-	var model Model
-
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)
@@ -26,78 +22,28 @@ func CreateModel(path string) Model {
 
 	scanner := bufio.NewScanner(file)
 
-	var faces []Face
 	var vertexes []Vector3D
+	var faces []Face
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		// Collect faces from file.
-		if strings.Contains(line, "f ") {
-			re := regexp.MustCompile("[0-9]+")
-			coords := re.FindAllString(line, -1)
-
-			var newFace []int
-
-			for i := 0; i < len(coords); i++ {
-				if len(coords) == 9 {
-					if i == 0 || i == 3 || i == 6 {
-						coord, err := strconv.ParseFloat(coords[i], 10)
-
-						if err != nil {
-							fmt.Println("Error in creation model process", err)
-						}
-
-						newFace = append(newFace, int(coord))
-					}
-				}
-			}
-
-			faces = append(faces, newFace)
+		switch {
+		case strings.HasPrefix(line, "f "):
+			face := parseFace(line)
+			faces = append(faces, face)
+		case strings.HasPrefix(line, "v "):
+			vertex := parseVertex(line)
+			vertexes = append(vertexes, vertex)
 		}
 
-		// Collect vertexes from file.
-		if strings.Contains(line, "v ") {
-			re := regexp.MustCompile("[+-]?([0-9]*[.])?[0-9]+")
-			coords := re.FindAllString(line, -1)
-
-			var newVert Vector3D
-
-			for i := 0; i < len(coords); i++ {
-				if len(coords) == 3 {
-					coord, err := strconv.ParseFloat(coords[i], 10)
-					fmt.Println(coord)
-					if err != nil {
-						fmt.Println("Error in creation model process", err)
-					}
-
-					switch i {
-					case 0:
-						newVert.X = coord
-						break
-					case 1:
-						newVert.Y = coord
-						break
-					case 2:
-						newVert.Z = coord
-						break
-					default:
-						fmt.Println("Collection of vertixes is incorrect.")
-					}
-				}
-			}
-
-			vertexes = append(vertexes, newVert)
-		}
 	}
-
-	model = Model{vertexes, faces}
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	return model
+	return Model{vertexes, faces}
 }
 
 func GetVertexCount(model Model) int {
@@ -106,4 +52,26 @@ func GetVertexCount(model Model) int {
 
 func GetFaceCount(model Model) int {
 	return len(model.Faces)
+}
+
+func parseFace(line string) Face {
+	parts := strings.Split(line, " ")[1:] // Skip the initial "f".
+	indices := make([]int, len(parts))
+
+	for i, part := range parts {
+		idx := strings.Split(part, "/")[0]
+		indices[i], _ = strconv.Atoi(idx)
+	}
+
+	return Face(indices)
+}
+
+func parseVertex(line string) Vector3D {
+	parts := strings.Split(line, " ")[1:] // Skip the initial "v".
+
+	X, _ := strconv.ParseFloat(parts[0], 64)
+	Y, _ := strconv.ParseFloat(parts[1], 64)
+	Z, _ := strconv.ParseFloat(parts[2], 64)
+
+	return Vector3D{X, Y, Z}
 }
