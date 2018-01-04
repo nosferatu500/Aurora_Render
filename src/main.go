@@ -8,6 +8,7 @@ import (
 	"math"
 	"AuroraRender/library"
 	"fmt"
+	"strconv"
 )
 
 const (
@@ -64,10 +65,13 @@ func main() {
 		//randomColor := color.RGBA{uint8(r.Int()), uint8(r.Int()), uint8(r.Int()), 255}
 		//newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2],image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, randomColor)
 
-		fmt.Println(intensity)
 
 		if intensity.Z > 0 {
-			intensityColor := color.RGBA{uint8(intensity.Z * 255), uint8(intensity.Z * 255), uint8(intensity.Z * 255), 255}
+			newNumberString := strconv.FormatFloat(intensity.Z * 255, 'f', 0, 64)
+			newNumber, _ := strconv.ParseInt(newNumberString, 10, 8)
+			fmt.Println(newNumber)
+
+			intensityColor := color.RGBA{uint8(newNumber), uint8(newNumber), uint8(newNumber), 255}
 			newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2],image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, intensityColor)
 		}
 
