@@ -7,13 +7,14 @@ import (
 	"image/png"
 	"math"
 	"AuroraRender/library"
+	"github.com/nosferatu500/go-vector"
 	"fmt"
 	"strconv"
 )
 
 const (
-	width = 800
-	height = 800
+	width = 1920
+	height = 1920
 	depth = 255
 )
 
@@ -41,12 +42,12 @@ func main() {
 	for i := 0; i < count - 20; i++ {
 		face := model.Faces[i]
 
-		var screenCoords [3]library.Vector2D
-		var worldCoords [3]library.Vector3D
+		var screenCoords [3]go_vector.Vector3D
+		var worldCoords [3]go_vector.Vector3D
 
 		for j := 0; j < 3; j++ {
 			v := model.Verts[face[j] - 1]
-			screenCoords[j] = library.Vector2D{(v.X + 1) * width / 2, (v.Y + 1) * height / 2}
+			screenCoords[j] = go_vector.Vector3D{(v.X + 1) * width / 2, (v.Y + 1) * height / 2, (v.Z + 1) * depth / 2}
 			worldCoords[j] = v
 		}
 
@@ -57,7 +58,7 @@ func main() {
 
 		n = n.Normalize()
 
-		intensity := n.Multiply(library.Vector3D{0,0,-1})
+		intensity := n.Multiply(go_vector.Vector3D{0,0,-1})
 
 		// newImage = createLine(screenCoords[1], screenCoords[2], image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, white)
 
@@ -74,7 +75,6 @@ func main() {
 			intensityColor := color.RGBA{uint8(newNumber), uint8(newNumber), uint8(newNumber), 255}
 			newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2],image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, intensityColor)
 		}
-
 	}
 
 	img = library.FlipByVertically(image.RGBA{Pix: newImage.Pix, Stride: newImage.Stride, Rect: newImage.Rect})
@@ -86,7 +86,7 @@ func main() {
 
 }
 
-func createLine(p0, p1 library.Vector2D, img image.RGBA, color color.RGBA) image.RGBA {
+func createLine(p0, p1 go_vector.Vector2D, img image.RGBA, color color.RGBA) image.RGBA {
 	steep := false
 
 	if math.Abs(float64(p0.X - p1.X)) < math.Abs(float64(p0.Y - p1.Y)) {
@@ -111,7 +111,7 @@ func createLine(p0, p1 library.Vector2D, img image.RGBA, color color.RGBA) image
 	return img
 }
 
-func createTriangle(t0, t1, t2 library.Vector2D, img image.RGBA, color color.RGBA) image.RGBA {
+func createTriangle(t0, t1, t2 go_vector.Vector3D, img image.RGBA, color color.RGBA) image.RGBA {
 	if t0.Y > t1.Y { t0, t1 = t1, t0 }
 
 	if t0.Y > t2.Y { t0, t2 = t2, t0 }

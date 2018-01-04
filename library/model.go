@@ -6,10 +6,11 @@ import (
 	"log"
 	"strings"
 	"strconv"
+	"github.com/nosferatu500/go-vector"
 )
 
 type Model struct {
-	Verts []Vector3D
+	Verts []go_vector.Vector3D
 	Faces []Face
 }
 
@@ -22,7 +23,7 @@ func CreateModel(path string) Model {
 
 	scanner := bufio.NewScanner(file)
 
-	var vertexes []Vector3D
+	var vertexes []go_vector.Vector3D
 	var faces []Face
 
 	for scanner.Scan() {
@@ -66,12 +67,12 @@ func parseFace(line string) Face {
 	return Face(indices)
 }
 
-func parseVertex(line string) Vector3D {
+func parseVertex(line string) go_vector.Vector3D {
 	parts := strings.Split(line, " ")[1:] // Skip the initial "v".
 
 	X, _ := strconv.ParseFloat(parts[0], 64)
 	Y, _ := strconv.ParseFloat(parts[1], 64)
 	Z, _ := strconv.ParseFloat(parts[2], 64)
 
-	return Vector3D{X, Y, Z}
+	return go_vector.Vector3D{X, Y, Z}
 }
