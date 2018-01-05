@@ -1,4 +1,4 @@
-package library
+package _type
 
 import (
 	"os"
@@ -7,11 +7,12 @@ import (
 	"strings"
 	"strconv"
 	"github.com/nosferatu500/go-vector"
+	"AuroraRender/library/type/basic"
 )
 
 type Model struct {
 	Verts []go_vector.Vector3D
-	Faces []Face
+	Faces []basic.Face
 }
 
 func CreateModel(path string) Model {
@@ -24,7 +25,7 @@ func CreateModel(path string) Model {
 	scanner := bufio.NewScanner(file)
 
 	var vertexes []go_vector.Vector3D
-	var faces []Face
+	var faces []basic.Face
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -55,7 +56,7 @@ func GetFaceCount(model Model) int {
 	return len(model.Faces)
 }
 
-func parseFace(line string) Face {
+func parseFace(line string) basic.Face {
 	parts := strings.Split(line, " ")[1:] // Skip the initial "f".
 	indices := make([]int, len(parts))
 
@@ -64,7 +65,7 @@ func parseFace(line string) Face {
 		indices[i], _ = strconv.Atoi(idx)
 	}
 
-	return Face(indices)
+	return basic.Face(indices)
 }
 
 func parseVertex(line string) go_vector.Vector3D {

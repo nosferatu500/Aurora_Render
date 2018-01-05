@@ -1,13 +1,15 @@
-package library
+package utils
 
 import (
 	"sync"
 	"sync/atomic"
 	"runtime"
+	"strconv"
+	"github.com/nosferatu500/go-vector"
 )
 
 // parallel starts parallel image processing based on the current GOMAXPROCS value.
-func parallel(dataSize int, fn func(partStart, partEnd int)) {
+func Parallel(dataSize int, fn func(partStart, partEnd int)) {
 	numGoroutines := 1
 	partSize := dataSize
 
@@ -46,4 +48,21 @@ func parallel(dataSize int, fn func(partStart, partEnd int)) {
 
 		wg.Wait()
 	}
+}
+
+func ParseVertex(key string, items []string) go_vector.Vector3D {
+	if key != "v" && key != "vt" && key != "vn" && key != "f" { return go_vector.Vector3D{} }
+
+	var Z float64
+
+	if key == "vt" {
+		Z = 0.0
+	} else {
+		Z, _ = strconv.ParseFloat(items[2], 64)
+	}
+
+	X, _ := strconv.ParseFloat(items[0], 64)
+	Y, _ := strconv.ParseFloat(items[1], 64)
+
+	return go_vector.Vector3D{X, Y, Z}
 }

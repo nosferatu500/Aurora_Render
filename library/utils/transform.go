@@ -1,4 +1,4 @@
-package library
+package utils
 
 import (
 	"image"
@@ -12,7 +12,7 @@ func FlipByVertically(img image.RGBA) *image.RGBA {
 	dstH := srcH
 	dst := image.NewRGBA(image.Rect(0, 0, dstW, dstH))
 
-	parallel(dstH, func(partStart, partEnd int) {
+	Parallel(dstH, func(partStart, partEnd int) {
 
 		for dstY := partStart; dstY < partEnd; dstY++ {
 			for dstX := 0; dstX < dstW; dstX++ {

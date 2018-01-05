@@ -1,3 +1,3 @@
-package library
+package basic
 
 type Face []int

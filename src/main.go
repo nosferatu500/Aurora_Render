@@ -6,10 +6,12 @@ import (
 	"os"
 	"image/png"
 	"math"
-	"AuroraRender/library"
 	"github.com/nosferatu500/go-vector"
 	"fmt"
 	"strconv"
+	"AuroraRender/library/type"
+	"AuroraRender/library/utils"
+	"AuroraRender/library/file"
 )
 
 const (
@@ -34,11 +36,17 @@ func main() {
 		zBuffer[i] = -2147483648
 	}
 
-	model := library.CreateModel("./obj/african_head.obj")
+	model := _type.CreateModel("./obj/african_head.obj")
+	// model := _type.CreateModel("./obj/torso2_base_fin.obj")
 
-	count := library.GetFaceCount(model)
+	mesh, _ := file.LoadOBJ("./obj/african_head.obj")
 
-	// Fix bug with out of range for faces collection.
+	fmt.Println(len(mesh.Triangles), "mesh")
+
+	count := _type.GetFaceCount(model)
+	fmt.Println(count, "count")
+
+/*
 	for i := 0; i < count - 20; i++ {
 		face := model.Faces[i]
 
@@ -54,9 +62,7 @@ func main() {
 		edge1 := worldCoords[2].Subtract(worldCoords[0])
 		edge2 := worldCoords[1].Subtract(worldCoords[0])
 
-		n := edge1.Multiply(edge2)
-
-		n = n.Normalize()
+		n := edge1.Cross(edge2).Normalize()
 
 		intensity := n.Multiply(go_vector.Vector3D{0,0,-1})
 
@@ -67,17 +73,59 @@ func main() {
 		//newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2],image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, randomColor)
 
 
+
 		if intensity.Z > 0 {
 			newNumberString := strconv.FormatFloat(intensity.Z * 255, 'f', 0, 64)
 			newNumber, _ := strconv.ParseInt(newNumberString, 10, 8)
-			fmt.Println(newNumber)
+
+			intensityColor := color.RGBA{uint8(newNumber), uint8(newNumber), uint8(newNumber), 255}
+			newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2],image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, intensityColor)
+		}
+	}
+*/
+
+	for i := 0; i < len(mesh.Triangles); i++ {
+		triangle := mesh.Triangles[i]
+
+		var screenCoords [3]go_vector.Vector3D
+		var worldCoords [3]go_vector.Vector3D
+
+		for j := 0; j < 3; j++ {
+			v := go_vector.Vector3D{}
+
+			switch j {
+			case 0: v = triangle.V1.Position
+			case 1: v = triangle.V2.Position
+			case 2: v = triangle.V3.Position
+			}
+
+			screenCoords[j] = go_vector.Vector3D{(v.X + 1) * width / 2, (v.Y + 1) * height / 2, (v.Z + 1) * depth / 2}
+			worldCoords[j] = v
+		}
+
+		edge1 := worldCoords[2].Subtract(worldCoords[0])
+		edge2 := worldCoords[1].Subtract(worldCoords[0])
+
+		n := edge1.Cross(edge2).Normalize()
+
+		intensity := n.Multiply(go_vector.Vector3D{0,0,-1})
+
+		// newImage = createLine(screenCoords[1], screenCoords[2], image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, white)
+
+		//r := rand.New(rand.NewSource(int64(i)))
+		//randomColor := color.RGBA{uint8(r.Int()), uint8(r.Int()), uint8(r.Int()), 255}
+		//newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2],image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, randomColor)
+
+		if intensity.Z > 0 {
+			newNumberString := strconv.FormatFloat(intensity.Z * 255, 'f', 0, 64)
+			newNumber, _ := strconv.ParseInt(newNumberString, 10, 8)
 
 			intensityColor := color.RGBA{uint8(newNumber), uint8(newNumber), uint8(newNumber), 255}
 			newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2],image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, intensityColor)
 		}
 	}
 
-	img = library.FlipByVertically(image.RGBA{Pix: newImage.Pix, Stride: newImage.Stride, Rect: newImage.Rect})
+	img = utils.FlipByVertically(image.RGBA{Pix: newImage.Pix, Stride: newImage.Stride, Rect: newImage.Rect})
 
 	//TODO: Make as separate func in library.
 	f, _ := os.OpenFile("out.png", os.O_WRONLY|os.O_CREATE, 0600)
