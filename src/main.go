@@ -18,6 +18,7 @@ const (
 	width = 1920
 	height = 1920
 	depth = 255
+	SSAA = 4
 )
 
 //TODO: Make as const in future release.
@@ -36,10 +37,11 @@ func main() {
 		zBuffer[i] = -2147483648
 	}
 
-	model := _type.CreateModel("./obj/african_head.obj")
+	model := _type.CreateModel("./obj/african_head.obj") // ~2.5K triangles
 	// model := _type.CreateModel("./obj/torso2_base_fin.obj")
 
-	mesh, _ := file.LoadOBJ("./obj/african_head.obj")
+	mesh, _ := file.LoadOBJ("./obj/african_head.obj") // ~1M triangles
+	// mesh, _ := file.LoadOBJ("./obj/torso2_base_fin.obj")
 
 	fmt.Println(len(mesh.Triangles), "mesh")
 
@@ -85,6 +87,7 @@ func main() {
 */
 
 	for i := 0; i < len(mesh.Triangles); i++ {
+		fmt.Println(i, " of ", len(mesh.Triangles))
 		triangle := mesh.Triangles[i]
 
 		var screenCoords [3]go_vector.Vector3D
@@ -132,6 +135,7 @@ func main() {
 	defer f.Close()
 	png.Encode(f, img)
 
+	fmt.Println("Write file complete.")
 }
 
 func createLine(p0, p1 go_vector.Vector2D, img image.RGBA, color color.RGBA) image.RGBA {

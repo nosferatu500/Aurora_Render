@@ -8,7 +8,6 @@ import (
 	"github.com/nosferatu500/go-vector"
 	"AuroraRender/library/type"
 	"AuroraRender/library/utils"
-	"fmt"
 )
 
 func parseIndex(value string, length int) int {
@@ -54,8 +53,6 @@ func LoadOBJ(path string) (*_type.Mesh, error) {
 				fvs[i] = parseIndex(vertex[0], len(vs))
 				fvts[i] = parseIndex(vertex[1], len(vts))
 				fvns[i] = parseIndex(vertex[2], len(vns))
-
-				fmt.Println(i, arg, vertex, vs[fvs[0]], len(vs))
 			}
 			for i := 1; i < len(fvs)-1; i++ {
 				i1, i2, i3 := 0, i, i+1
