@@ -66,3 +66,10 @@ func ParseVertex(key string, items []string) go_vector.Vector3D {
 
 	return go_vector.Vector3D{X, Y, Z}
 }
+
+func ParseFace(value string) int {
+	parsed, _ := strconv.ParseInt(value, 0, 0)
+	n := int(parsed)
+	return n
+}
+

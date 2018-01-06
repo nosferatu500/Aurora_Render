@@ -40,8 +40,8 @@ func main() {
 	model := _type.CreateModel("./obj/african_head.obj") // ~2.5K triangles
 	// model := _type.CreateModel("./obj/torso2_base_fin.obj")
 
-	mesh, _ := file.LoadOBJ("./obj/african_head.obj") // ~1M triangles
-	// mesh, _ := file.LoadOBJ("./obj/torso2_base_fin.obj")
+	mesh, _ := file.LoadOBJ("./obj/african_head.obj")
+	// mesh, _ := file.LoadOBJ("./obj/torso2_base_fin.obj") // ~1M triangles
 
 	fmt.Println(len(mesh.Triangles), "mesh")
 
@@ -111,7 +111,7 @@ func main() {
 
 		n := edge1.Cross(edge2).Normalize()
 
-		intensity := n.Multiply(go_vector.Vector3D{0,0,-1})
+		intensity := n.Multiply(go_vector.Vector3D{0,0,-0.5})
 
 		// newImage = createLine(screenCoords[1], screenCoords[2], image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, white)
 
