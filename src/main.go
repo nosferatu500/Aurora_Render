@@ -8,11 +8,10 @@ import (
 	"math"
 	"github.com/nosferatu500/go-vector"
 	"fmt"
-	//"strconv"
 	"AuroraRender/library/type"
 	"AuroraRender/library/utils"
-	//"AuroraRender/library/file"
 	"AuroraRender/library/type/basic"
+	"AuroraRender/library/file"
 )
 
 const (
@@ -67,12 +66,15 @@ func main() {
 
 	newMesh := _type.CreateMesh("Cube", vertices, faces)
 
+	//meshes, _ := file.LoadBabylon("./obj/monkey.babylon")
+	mesh, _ := file.LoadOBJ("./obj/african_head.obj")
+
 	device.Clear(0,0,0,255)
 	newMesh.Rotation = go_vector.Vector3D{newMesh.Rotation.X + 0.01, newMesh.Rotation.Y + 0.01, newMesh.Rotation.Z}
 
-	meshes := make([]_type.Mesh, 0)
+	var meshes []*_type.Mesh
 
-	meshes = append(meshes, *newMesh)
+	meshes = append(meshes, mesh)
 	var newImage image.RGBA
 	newImage = _type.Render(camera, meshes, &bmp, *img)
 

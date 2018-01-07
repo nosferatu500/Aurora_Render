@@ -6,62 +6,56 @@ import (
 	"bufio"
 	"github.com/nosferatu500/go-vector"
 	"AuroraRender/library/type"
-	"AuroraRender/library/utils"
+	"AuroraRender/library/type/basic"
+	"strconv"
 )
 
+//Fix empty faces
 func LoadOBJ(path string) (*_type.Mesh, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-	vs := make([]go_vector.Vector3D, 1, 1024)
-	vts := make([]go_vector.Vector3D, 1, 1024)
-	vns := make([]go_vector.Vector3D, 1, 1024)
-	var triangles []*_type.Triangle
+
+	var vertices []go_vector.Vector3D
+	var faces []basic.Face
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		fields := strings.Fields(line)
 
-		if len(fields) == 0 { continue }
-
-		key := fields[0]
-		args := fields[1:]
-
-		v := utils.ParseVertex(key, args)
-
-		switch key {
-		case "v":	vs = append(vs, v)
-		case "vt":	vts = append(vts, v)
-		case "vn":	vns = append(vns, v)
-		case "f":
-			fvs := make([]int, len(args))
-			fvts := make([]int, len(args))
-			fvns := make([]int, len(args))
-			for i, arg := range args {
-				vertex := strings.Split(arg+"//", "/")
-
-				fvs[i] = utils.ParseFace(vertex[0])
-				fvts[i] = utils.ParseFace(vertex[1])
-				fvns[i] = utils.ParseFace(vertex[2])
-			}
-			for i := 1; i < len(fvs)-1; i++ {
-				i1, i2, i3 := 0, i, i+1
-				t := _type.Triangle{}
-				t.V1.Position = vs[fvs[i1]]
-				t.V2.Position = vs[fvs[i2]]
-				t.V3.Position = vs[fvs[i3]]
-				t.V1.Normal = vns[fvns[i1]]
-				t.V2.Normal = vns[fvns[i2]]
-				t.V3.Normal = vns[fvns[i3]]
-				t.V1.Texture = vts[fvts[i1]]
-				t.V2.Texture = vts[fvts[i2]]
-				t.V3.Texture = vts[fvts[i3]]
-				t.RecoveryNormals()
-				triangles = append(triangles, &t)
-			}
+		switch {
+		case strings.HasPrefix(line, "f "):
+			face := parseFace(line)
+			faces = append(faces, face)
+		case strings.HasPrefix(line, "v "):
+			vertex := parseVertex(line)
+			vertices = append(vertices, vertex)
 		}
 	}
-	return _type.CreateMesh(triangles), scanner.Err()
+	return _type.CreateMesh("test", vertices, faces), err
+}
+
+func parseFace(line string) basic.Face {
+	parts := strings.Split(line, " ")[1:] // Skip the initial "f".
+	var indices []int
+
+	for _, part := range parts {
+		idx := strings.Split(part, "/")[0]
+		ind, _ := strconv.Atoi(idx)
+		indices = append(indices, ind)
+	}
+
+	return basic.Face{indices[0],indices[1],indices[2]}
+}
+
+func parseVertex(line string) go_vector.Vector3D {
+	parts := strings.Split(line, " ")[1:] // Skip the initial "v".
+
+	X, _ := strconv.ParseFloat(parts[0], 64)
+	Y, _ := strconv.ParseFloat(parts[1], 64)
+	Z, _ := strconv.ParseFloat(parts[2], 64)
+
+	return go_vector.Vector3D{X, Y, Z}
 }

@@ -98,7 +98,7 @@ func DrawBLine(point0, point1 go_vector.Vector2D, img image.RGBA) image.RGBA {
 	return img
 }
 
-func Render(camera Camera, meshes []Mesh, bmp *WriteableBitmap, img image.RGBA) image.RGBA {
+func Render(camera Camera, meshes []*Mesh, bmp *WriteableBitmap, img image.RGBA) image.RGBA {
 	viewMatrix := utils.LookAtLH(camera.Position, camera.Target, go_vector.Vector3D{0, 1, 0})
 	aspect := bmp.PixelWidth / bmp.PixelHeight
 	projectionMatrix := go_matrix.PerspectiveFovRH(0.78, float64(aspect), 0.01, 1.0)
@@ -106,21 +106,20 @@ func Render(camera Camera, meshes []Mesh, bmp *WriteableBitmap, img image.RGBA) 
 	for _, mesh := range meshes {
 		worldMatrix := go_matrix.RotationYawPitchRoll(mesh.Rotation.Y, mesh.Rotation.X, mesh.Rotation.Z).Multiply(utils.Translation(mesh.Position))
 		transformMatrix := worldMatrix.Multiply(viewMatrix).Multiply(projectionMatrix)
+		fmt.Println(len(mesh.Faces), len(mesh.Vertices))
 
-		fmt.Println("face", len(mesh.Faces))
-		fmt.Println("vert", len(mesh.Vertices))
+		for i, face := range mesh.Faces {
+			fmt.Println("face.B", face.B)
+			fmt.Println(i, len(mesh.Faces))
 
-		for _, face := range mesh.Faces {
 			vertexA := mesh.Vertices[face.A]
 			vertexB := mesh.Vertices[face.B]
 			vertexC := mesh.Vertices[face.C]
 
+
 			pixelA := Project(vertexA, transformMatrix, bmp)
 			pixelB := Project(vertexB, transformMatrix, bmp)
 			pixelC := Project(vertexC, transformMatrix, bmp)
-
-			fmt.Println(face.C)
-			fmt.Println(mesh.Vertices)
 
 			img = DrawBLine(pixelA, pixelB, img)
 			img = DrawBLine(pixelB, pixelC, img)
