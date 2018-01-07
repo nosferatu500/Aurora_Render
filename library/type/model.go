@@ -65,7 +65,7 @@ func parseFace(line string) basic.Face {
 		indices[i], _ = strconv.Atoi(idx)
 	}
 
-	return basic.Face(indices)
+	return basic.Face{0,0,0}
 }
 
 func parseVertex(line string) go_vector.Vector3D {

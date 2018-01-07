@@ -12,6 +12,7 @@ import (
 	"AuroraRender/library/type"
 	"AuroraRender/library/utils"
 	//"AuroraRender/library/file"
+	"AuroraRender/library/type/basic"
 )
 
 const (
@@ -27,9 +28,9 @@ var red = color.RGBA{255, 0, 0, 255}
 var blue = color.RGBA{0, 0, 255, 255}
 
 func main() {
-	img := image.NewRGBA(image.Rect(0, 0, 640, 480))
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
-	bmp := _type.WriteableBitmap{640, 480, nil}
+	bmp := _type.WriteableBitmap{width, height, nil}
 
 	buffer := make([]byte, bmp.PixelHeight * bmp.PixelWidth * 4)
 
@@ -37,7 +38,7 @@ func main() {
 
 	camera := _type.CreateCamera(go_vector.Vector3D{0,0,10}, go_vector.Vector3D{0,0,0})
 
-	vertices := make([]go_vector.Vector3D, 8)
+	var vertices []go_vector.Vector3D
 
 	vertices = append(vertices, go_vector.Vector3D{-1, 1, 1})
 	vertices = append(vertices, go_vector.Vector3D{1, 1, 1})
@@ -48,12 +49,28 @@ func main() {
 	vertices = append(vertices, go_vector.Vector3D{1, -1, 1})
 	vertices = append(vertices, go_vector.Vector3D{1, -1, -1})
 
-	newMesh := _type.CreateMesh("Cube", vertices)
+	var faces []basic.Face
+
+	faces = append(faces, basic.Face{A:0, B: 1, C: 2})
+	faces = append(faces, basic.Face{A:1, B: 2, C: 3})
+	faces = append(faces, basic.Face{A:1, B: 3, C: 6})
+	faces = append(faces, basic.Face{A:1, B: 5, C: 6})
+	faces = append(faces, basic.Face{A:0, B: 1, C: 4})
+	faces = append(faces, basic.Face{A:1, B: 4, C: 5})
+
+	faces = append(faces, basic.Face{A:2, B: 3, C: 7})
+	faces = append(faces, basic.Face{A:3, B: 6, C: 7})
+	faces = append(faces, basic.Face{A:0, B: 2, C: 7})
+	faces = append(faces, basic.Face{A:0, B: 4, C: 7})
+	faces = append(faces, basic.Face{A:4, B: 5, C: 6})
+	faces = append(faces, basic.Face{A:4, B: 6, C: 7})
+
+	newMesh := _type.CreateMesh("Cube", vertices, faces)
 
 	device.Clear(0,0,0,255)
 	newMesh.Rotation = go_vector.Vector3D{newMesh.Rotation.X + 0.01, newMesh.Rotation.Y + 0.01, newMesh.Rotation.Z}
 
-	meshes := make([]_type.Mesh, 1)
+	meshes := make([]_type.Mesh, 0)
 
 	meshes = append(meshes, *newMesh)
 	var newImage image.RGBA

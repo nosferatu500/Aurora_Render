@@ -1,3 +1,5 @@
 package basic
 
-type Face []int
+type Face struct {
+	A, B, C int
+}
