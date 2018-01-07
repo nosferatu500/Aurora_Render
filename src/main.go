@@ -8,10 +8,10 @@ import (
 	"math"
 	"github.com/nosferatu500/go-vector"
 	"fmt"
-	"strconv"
+	//"strconv"
 	"AuroraRender/library/type"
 	"AuroraRender/library/utils"
-	"AuroraRender/library/file"
+	//"AuroraRender/library/file"
 )
 
 const (
@@ -27,9 +27,42 @@ var red = color.RGBA{255, 0, 0, 255}
 var blue = color.RGBA{0, 0, 255, 255}
 
 func main() {
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	img := image.NewRGBA(image.Rect(0, 0, 640, 480))
 
+	bmp := _type.WriteableBitmap{640, 480, nil}
+
+	buffer := make([]byte, bmp.PixelHeight * bmp.PixelWidth * 4)
+
+	device := _type.CreateDevice(buffer, bmp)
+
+	camera := _type.CreateCamera(go_vector.Vector3D{0,0,10}, go_vector.Vector3D{0,0,0})
+
+	vertices := make([]go_vector.Vector3D, 8)
+
+	vertices = append(vertices, go_vector.Vector3D{-1, 1, 1})
+	vertices = append(vertices, go_vector.Vector3D{1, 1, 1})
+	vertices = append(vertices, go_vector.Vector3D{-1, -1, 1})
+	vertices = append(vertices, go_vector.Vector3D{-1, -1, -1})
+	vertices = append(vertices, go_vector.Vector3D{-1, 1, -1})
+	vertices = append(vertices, go_vector.Vector3D{1, 1, -1})
+	vertices = append(vertices, go_vector.Vector3D{1, -1, 1})
+	vertices = append(vertices, go_vector.Vector3D{1, -1, -1})
+
+	newMesh := _type.CreateMesh("Cube", vertices)
+
+	device.Clear(0,0,0,255)
+	newMesh.Rotation = go_vector.Vector3D{newMesh.Rotation.X + 0.01, newMesh.Rotation.Y + 0.01, newMesh.Rotation.Z}
+
+	meshes := make([]_type.Mesh, 1)
+
+	meshes = append(meshes, *newMesh)
 	var newImage image.RGBA
+	newImage = _type.Render(camera, meshes, &bmp, *img)
+
+	bmp.Present(device.GetBackBuffer())
+
+
+
 
 	var zBuffer [width*height]int
 
@@ -40,10 +73,10 @@ func main() {
 	model := _type.CreateModel("./obj/african_head.obj") // ~2.5K triangles
 	// model := _type.CreateModel("./obj/torso2_base_fin.obj")
 
-	mesh, _ := file.LoadOBJ("./obj/african_head.obj")
+	//mesh, _ := file.LoadOBJ("./obj/african_head.obj")
 	// mesh, _ := file.LoadOBJ("./obj/torso2_base_fin.obj") // ~1M triangles
 
-	fmt.Println(len(mesh.Triangles), "mesh")
+	//fmt.Println(len(mesh.Triangles), "mesh")
 
 	count := _type.GetFaceCount(model)
 	fmt.Println(count, "count")
@@ -85,7 +118,7 @@ func main() {
 		}
 	}
 */
-
+/*
 	for i := 0; i < len(mesh.Triangles); i++ {
 		fmt.Println(i, " of ", len(mesh.Triangles))
 		triangle := mesh.Triangles[i]
@@ -127,6 +160,8 @@ func main() {
 			newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2],image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, intensityColor)
 		}
 	}
+
+*/
 
 	img = utils.FlipByVertically(image.RGBA{Pix: newImage.Pix, Stride: newImage.Stride, Rect: newImage.Rect})
 
