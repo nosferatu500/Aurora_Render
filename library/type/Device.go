@@ -53,20 +53,6 @@ fmt.Println(point)
 	return go_vector.Vector2D{x, y }
 }
 
-func DrawLine(point0, point1 go_vector.Vector2D, img image.RGBA) image.RGBA {
-	dist := point1.Subtract(point0).Length()
-
-	if dist < 2 { return img}
-
-	middlePoint := point1.Subtract(point0).DivideScalar(2).Add(point0)
-	img.Set(int(middlePoint.X), int(middlePoint.Y), color.RGBA{255,255,0,255})
-
-	DrawLine(point0, middlePoint, img)
-	DrawLine(middlePoint, point1, img)
-
-	return img
-}
-
 func DrawBLine(point0, point1 go_vector.Vector2D, img image.RGBA) image.RGBA {
 	x0 := int(point0.X)
 	y0 := int(point0.Y)

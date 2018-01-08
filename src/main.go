@@ -66,15 +66,15 @@ func main() {
 
 	newMesh := _type.CreateMesh("Cube", vertices, faces)
 
-	//meshes, _ := file.LoadBabylon("./obj/monkey.babylon")
-	mesh, _ := file.LoadOBJ("./obj/african_head.obj")
+	meshes, _ := file.LoadBabylon("./obj/monkey.babylon")
+	//mesh, _ := file.LoadOBJ("./obj/african_head.obj")
 
 	device.Clear(0,0,0,255)
 	newMesh.Rotation = go_vector.Vector3D{newMesh.Rotation.X + 0.01, newMesh.Rotation.Y + 0.01, newMesh.Rotation.Z}
 
-	var meshes []*_type.Mesh
+	//var meshes []*_type.Mesh
 
-	meshes = append(meshes, mesh)
+	//meshes = append(meshes, mesh)
 	var newImage image.RGBA
 	newImage = _type.Render(camera, meshes, &bmp, *img)
 
