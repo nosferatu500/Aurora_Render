@@ -11,6 +11,9 @@ import (
 	"strconv"
 	"AuroraRender/library/utils"
 	"AuroraRender/library/file"
+	camera2 "AuroraRender/library/camera"
+	scene2 "AuroraRender/library/scene"
+	"AuroraRender/library/light"
 )
 
 const (
@@ -83,6 +86,17 @@ func main() {
 			newImage = createTriangle(screenCoords[0], screenCoords[1], screenCoords[2],image.RGBA{Pix: img.Pix, Stride: img.Stride, Rect: img.Rect}, intensityColor)
 		}
 	}
+
+
+	camera := camera2.CreatePerspectiveCamera(45, width / height, 2000, 1)
+	camera.Position.Z = 250
+
+	scene := scene2.CreateScene();
+
+	ambientLight := light.CreateAmbientLight()
+
+
+
 
 	img = utils.FlipByVertically(image.RGBA{Pix: newImage.Pix, Stride: newImage.Stride, Rect: newImage.Rect})
 
